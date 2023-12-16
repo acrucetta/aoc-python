@@ -2,11 +2,8 @@
 Utility functions and classes for Advent of Code
 """
 
-import shapely.geometry
-import shapely.affinity
 import math
 import copy
-import parse
 import numpy as np
 
 # References: 
@@ -78,6 +75,14 @@ def read_grid(filepath):
         matrix.append(split_row)
     
     return np.array(matrix)
+
+def parse_grid(strs : str) -> list[list[str]]:
+    """
+    Parse a string into a grid.
+    """
+    rows = strs.split("\n")
+    grid = [list(row) for row in rows]
+    return grid
 
 #
 # GRID CLASS

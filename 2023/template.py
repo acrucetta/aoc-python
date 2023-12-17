@@ -11,8 +11,11 @@ sys.path.insert(0, parent_dir)
 
 import common.util as util
 
-DAY = 13
-RELATIVE_PATH = f"2023/data/day{DAY:02d}.txt"
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+DAY = 00
+MAIN_PATH = f"2023/data/day{DAY:02d}.txt"
+SAMPLE_PATH = "2023/data/day{DAY:02d}-sample.txt")
 
 def part1(input:str) -> int:
     pass
@@ -22,11 +25,13 @@ def part2(input:str) -> int:
 
 if __name__ == "__main__":
     util.set_debug(False)
-    sample = util.read_strs("2023/data/{DAY:02d}-sample.txt")
-    input = util.read_strs(RELATIVE_PATH)
+    input = util.read_strs(MAIN_PATH, sep="\n")
+    sample = util.read_strs(SAMPLE_PATH, sep="\n")
 
     print("PART 1")
-    print(part1(input))
+    # part1(input)
+    part1(sample)
 
     print("PART 2")
-    print(part2(input))
+    # part2(input)
+    # part2(sample)

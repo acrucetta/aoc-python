@@ -57,7 +57,6 @@ def read_strs(filename, sep=None):
     with open(filename) as f:
         txt = f.read().strip()
         strs = txt.split(sep=sep)    
-
     return strs
 
 def read_grid(filepath):
@@ -72,6 +71,22 @@ def read_grid(filepath):
     
     for row in rows:
         split_row = [int(r) for r in row]
+        matrix.append(split_row)
+    
+    return np.array(matrix)
+
+def read_str_grid(filepath):
+    '''
+    Reads matrix from the filepath.
+    '''
+    with open(filepath) as f:
+        data = f.readlines()
+    
+    rows = list(map(lambda x: x.strip('\n'),data))
+    matrix = []
+    
+    for row in rows:
+        split_row = [r for r in row]
         matrix.append(split_row)
     
     return np.array(matrix)

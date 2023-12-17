@@ -13,6 +13,8 @@ sys.path.insert(0, parent_dir)
 
 import common.util as util
 
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 """
 Day 13:
 
@@ -51,55 +53,59 @@ DAY = 13
 RELATIVE_PATH = f"2023/data/day{DAY:02d}.txt"
 
 
+def array_diffs(arr1, arr2):
+    """
+    Check how many differences there are between two arrays.
+    """
+    return np.sum(arr1 != arr2)
+
+
 def part1(input: list[str]) -> int:
-    sums = 0
+    total_sum = 0
     for strs in input:
-        print(strs)
         grid = np.array(util.parse_grid(strs))
         max_row, max_col = grid.shape
 
-        match_addr = (None, 0)  # (direction, index)
-        # Check for vertical symmetry
-        for i in range(1, max_col + 1):
-            # We need to account for the fact that the mirror
-            # may not be in the middle of the grid
-            len_before = i
-            len_after = max_col - i
-            if len_before > len_after:
-                len_after = len_before
-            else:
-                len_before = len_after
-            arr_before = grid[:, :len_before]
-            arr_after = grid[:, -len_after:]
-
-            if np.array_equal(arr_before, arr_after):
-                print("Match found at index", i)
-                match_addr = ("vertical", i)
-                break
+        for i in range(1, max_col):
+            col = min(i, max_col - i)
+            left = grid[:, i - col : i]
+            right = np.fliplr(grid[:, i : col + i])
+            if np.array_equal(left, right):
+                total_sum += i
 
         # Check for horizontal symmetry
-        for i in range(1, max_row + 1):
-            rows_before = grid[:i, :]
-            rows_after = grid[i:, :]
-            if np.array_equal(rows_before, rows_after):
-                match_addr = ("horizontal", i)
-                break
-        
-        match match_addr:
-            case ("vertical", i):
-                sums += i
-            case ("horizontal", i):
-                sums += 100 * i
-            case _:
-                print("No match found")
-        
-        print(10*"-")
-    print(sums)
-    return sums
+        for i in range(1, max_row):
+            row = min(i, max_row - i)
+            up = grid[i - row : i, :]
+            down = np.flipud(grid[i : row + i, :])
+            if np.array_equal(up, down):
+                total_sum += 100 * i
+    print(total_sum)
+    return total_sum
 
 
 def part2(input: list[str]) -> int:
-    pass
+    total_sum = 0
+    for strs in input:
+        grid = np.array(util.parse_grid(strs))
+        max_row, max_col = grid.shape
+
+        for i in range(1, max_col):
+            col = min(i, max_col - i)
+            left = grid[:, i - col : i]
+            right = np.fliplr(grid[:, i : col + i])
+            if array_diffs(left, right) == 1:
+                total_sum += i
+
+        # Check for horizontal symmetry
+        for i in range(1, max_row):
+            row = min(i, max_row - i)
+            up = grid[i - row : i, :]
+            down = np.flipud(grid[i : row + i, :])
+            if array_diffs(up, down) == 1:
+                total_sum += 100 * i
+    print(total_sum)
+    return total_sum
 
 
 if __name__ == "__main__":
@@ -108,8 +114,7 @@ if __name__ == "__main__":
     data = util.read_strs(RELATIVE_PATH, sep="\n\n")
 
     print("PART 1")
-    # print(part1(input))
-    part1(sample)
+    part1(data)
 
     print("PART 2")
-    print(part2(input))
+    part2(data)

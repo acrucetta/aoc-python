@@ -63,13 +63,43 @@ def cycle(grid: npt.NDArray[np.character]) -> npt.NDArray[np.character]:
         grid = np.rot90(grid)
     return grid
 
+# def run_cycles(grid: npt.NDArray[np.character], cycles: int) -> int:
+#     load : int = 0
+#     for _ in range(cycles):
+#         grid = cycle(grid)
+#         load = calculate_load(grid)
+#     return load
+
 def run_cycles(grid: npt.NDArray[np.character], cycles: int) -> int:
-    load : int = 0
-    for _ in range(cycles):
+    cache = {}
+    load = 0
+    cycle_num = 0
+
+    while cycle_num < cycles:
+        # Convert grid to a hashable form
+        grid_key = tuple(map(tuple, grid))
+
+        if grid_key in cache:
+            prev_cycle, prev_load = cache[grid_key]
+            cycle_length = cycle_num - prev_cycle
+
+            # Calculate how many full cycles we can skip
+            remaining_cycles = cycles - cycle_num
+            full_cycles_to_skip = remaining_cycles // cycle_length
+
+            cycle_num += full_cycles_to_skip * cycle_length
+            load = prev_load
+            continue
+
+        # Cache the current state
+        cache[grid_key] = (cycle_num, load)
+
+        # Perform the cycle
         grid = cycle(grid)
         load = calculate_load(grid)
-    return load
+        cycle_num += 1
 
+    return load
 
 def tilt(grid: npt.NDArray[np.character]) -> npt.NDArray[np.character]:
     max_x, max_y = grid.shape

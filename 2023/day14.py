@@ -49,50 +49,70 @@ new grid; it can be overwritten by a round rock later.
 """
 
 
-def part1(grid: npt.NDArray[np.character]) -> int:
-    
-    max_x, max_y = grid.shape
+def calculate_load(grid: npt.NDArray[np.character]) -> int:
+    max_x, _ = grid.shape
     total_load = 0
+    for row in range(max_x):
+        rounded_rocks = list(np.where(grid[row] == "O")[0])
+        total_load += len(rounded_rocks) * (max_x - row)
+    return total_load
 
+def cycle(grid: npt.NDArray[np.character]) -> npt.NDArray[np.character]:
+    for _ in range(4):
+        grid = tilt(grid)
+        grid = np.rot90(grid)
+    return grid
+
+def run_cycles(grid: npt.NDArray[np.character], cycles: int) -> int:
+    load : int = 0
+    for _ in range(cycles):
+        grid = cycle(grid)
+        load = calculate_load(grid)
+    return load
+
+
+def tilt(grid: npt.NDArray[np.character]) -> npt.NDArray[np.character]:
+    max_x, max_y = grid.shape
     # Iterate over each column
     for col in range(max_y):
         first_empty = -1
 
         for row in range(max_x):
             spot = grid[row][col]
-            
+
             # If we encounter a cube-shaped rock, leave it in place
-            if spot == '#':
+            if spot == "#":
                 first_empty = -1
-            elif spot == '.' and first_empty == -1:
+            elif spot == "." and first_empty == -1:
                 first_empty = row
             # If we encounter a round rock, move it to the last empty space
-            elif spot == 'O':
+            elif spot == "O":
                 if first_empty != -1:
-                    grid[first_empty][col] = 'O'
-                    grid[row][col] = '.'
-                    total_load += (max_x - first_empty) + 1
+                    grid[first_empty][col] = "O"
+                    grid[row][col] = "."
                     first_empty += 1
-    print(grid)
-    return total_load
+    return grid
 
 
+def part1(grid: npt.NDArray[np.character]) -> int:
+    north_tilt = tilt(grid)
+    return calculate_load(north_tilt)
 
-def part2(input: str) -> int:
-    pass
+
+def part2(grid: npt.NDArray[np.character]) -> int:
+    return run_cycles(grid, 1000000001)
 
 
 if __name__ == "__main__":
     util.set_debug(False)
-    # input = util.read_strs(MAIN_PATH, sep="\n")
+    input = util.read_str_grid(MAIN_PATH)
     sample = util.read_str_grid(SAMPLE_PATH)
 
-    print(sample)
+    # print(sample)
     print("PART 1")
-    # part1(input)
+    # print(part1(input))
     print(part1(sample))
 
-
     print("PART 2")
-    # part2(input)
-    # part2(sample)
+    # print(part2(input))
+    print(part2(sample))

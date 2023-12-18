@@ -1,12 +1,9 @@
 # Add the parent directory to the Python path so `common` can be found
-import re
-import math
 import os
 import sys
-import functools
-import itertools
 import numpy as np
 import numpy.typing as npt
+from typing import Callable, List, Tuple, Union, Set, Dict, Any, Optional
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, parent_dir)
@@ -57,51 +54,31 @@ def calculate_load(grid: npt.NDArray[np.character]) -> int:
         total_load += len(rounded_rocks) * (max_x - row)
     return total_load
 
+
 def cycle(grid: npt.NDArray[np.character]) -> npt.NDArray[np.character]:
     for _ in range(4):
-        grid = tilt(grid)
-        grid = np.rot90(grid)
+        grid = collapse(grid)
+        grid = np.rot90(grid, k=-1)
     return grid
 
-# def run_cycles(grid: npt.NDArray[np.character], cycles: int) -> int:
-#     load : int = 0
-#     for _ in range(cycles):
-#         grid = cycle(grid)
-#         load = calculate_load(grid)
-#     return load
 
 def run_cycles(grid: npt.NDArray[np.character], cycles: int) -> int:
-    cache = {}
-    load = 0
-    cycle_num = 0
-
-    while cycle_num < cycles:
-        # Convert grid to a hashable form
-        grid_key = tuple(map(tuple, grid))
-
-        if grid_key in cache:
-            prev_cycle, prev_load = cache[grid_key]
-            cycle_length = cycle_num - prev_cycle
-
-            # Calculate how many full cycles we can skip
-            remaining_cycles = cycles - cycle_num
-            full_cycles_to_skip = remaining_cycles // cycle_length
-
-            cycle_num += full_cycles_to_skip * cycle_length
-            load = prev_load
-            continue
-
-        # Cache the current state
-        cache[grid_key] = (cycle_num, load)
-
-        # Perform the cycle
+    states: Dict[frozenset[tuple[int, ...]], int] = {}
+    i = 0
+    while i < cycles:
         grid = cycle(grid)
-        load = calculate_load(grid)
-        cycle_num += 1
+        state = frozenset(tuple(row) for row in grid)
+        if state in states and i < 500:
+            dist_to_goal = cycles - i
+            loop_length = i - states[state]
+            i = cycles - (dist_to_goal % loop_length)
+        states[state] = i
+        i += 1
 
-    return load
+    return calculate_load(grid)
 
-def tilt(grid: npt.NDArray[np.character]) -> npt.NDArray[np.character]:
+
+def collapse(grid: npt.NDArray[np.character]) -> npt.NDArray[np.character]:
     max_x, max_y = grid.shape
     # Iterate over each column
     for col in range(max_y):
@@ -125,12 +102,13 @@ def tilt(grid: npt.NDArray[np.character]) -> npt.NDArray[np.character]:
 
 
 def part1(grid: npt.NDArray[np.character]) -> int:
-    north_tilt = tilt(grid)
+    north_tilt = collapse(grid)
     return calculate_load(north_tilt)
 
 
 def part2(grid: npt.NDArray[np.character]) -> int:
-    return run_cycles(grid, 1000000001)
+    NUM_CYCLES = 1_000_000_000
+    return run_cycles(grid, NUM_CYCLES)
 
 
 if __name__ == "__main__":
@@ -144,5 +122,7 @@ if __name__ == "__main__":
     print(part1(sample))
 
     print("PART 2")
-    # print(part2(input))
+    print("Sample:")
     print(part2(sample))
+    print("Input:")
+    print(part2(input))

@@ -56,7 +56,7 @@ def calculate_load(grid: npt.NDArray[np.character]) -> int:
 
 
 def cycle(grid: npt.NDArray[np.character]) -> npt.NDArray[np.character]:
-    for _ in range(4):
+    for direction in ["north", "west", "south", "east"]:
         grid = collapse(grid)
         grid = np.rot90(grid, k=-1)
     return grid
@@ -107,7 +107,8 @@ def part1(grid: npt.NDArray[np.character]) -> int:
 
 
 def part2(grid: npt.NDArray[np.character]) -> int:
-    NUM_CYCLES = 1_000_000_000
+    # NUM_CYCLES = 1_000_000_000
+    NUM_CYCLES = 1
     return run_cycles(grid, NUM_CYCLES)
 
 
@@ -117,12 +118,12 @@ if __name__ == "__main__":
     sample = util.read_str_grid(SAMPLE_PATH)
 
     # print(sample)
-    print("PART 1")
+    # print("PART 1")
     # print(part1(input))
-    print(part1(sample))
+    # print(part1(sample))
 
-    print("PART 2")
+    # print("PART 2")
     print("Sample:")
     print(part2(sample))
-    print("Input:")
-    print(part2(input))
+    # print("Input:")
+    # print(part2(input))

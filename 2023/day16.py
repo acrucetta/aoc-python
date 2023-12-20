@@ -2,15 +2,9 @@ from enum import Enum
 import sys
 import os
 from typing import List, Tuple
-
+import util
 import numpy as np
 
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, parent_dir)
-
-import common.util as util
-
-os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 """
@@ -185,6 +179,9 @@ def dfs(
     """
     # Start at the top-left (0, 0)
     queue = [start]
+    energized_grid = [
+        [False for _ in range(grid.max_x + 1)] for _ in range(grid.max_y + 1)
+    ]
     energized = set()
     while queue:
         point, direction = queue.pop(0)
@@ -199,6 +196,7 @@ def dfs(
             continue
 
         energized.add((point, direction))
+        energized_grid[point[1]][point[0]] = True
 
         # Get the next point in the direction
         next_point = grid.move_coordinates(point, direction)
@@ -210,6 +208,7 @@ def dfs(
         for next_direction in next_directions:
             queue.append((next_point, next_direction))
 
+    print(energized_grid)
     return len(energized)
 
 

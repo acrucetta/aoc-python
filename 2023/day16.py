@@ -1,7 +1,7 @@
 from enum import Enum
 import sys
 import os
-from typing import Tuple
+from typing import List, Tuple
 
 import numpy as np
 
@@ -117,31 +117,47 @@ class Direction(Enum):
             raise IndexError("Invalid index")
 
 
-def handle_empty(direction: Direction) -> Direction:
-    return direction
+def handle_empty(direction: Direction) -> List[Direction]:
+    return [direction]
 
 
-def handle_mirror_slash(direction: Direction) -> list[Direction]:
-    return [Direction.UP if direction == Direction.LEFT else Direction.DOWN]
+def handle_mirror_slash(direction: Direction) -> List[Direction]:
+    match direction:
+        case Direction.LEFT:
+            return [Direction.DOWN]
+        case Direction.RIGHT:
+            return [Direction.UP]
+        case Direction.UP:
+            return [Direction.RIGHT]
+        case Direction.DOWN:
+            return [Direction.LEFT]
 
 
-def handle_mirror_backslash(direction: Direction) -> list[Direction]:
-    return [Direction.UP if direction == Direction.RIGHT else Direction.DOWN]
+def handle_mirror_backslash(direction: Direction) -> List[Direction]:
+    match direction:
+        case Direction.LEFT:
+            return [Direction.UP]
+        case Direction.RIGHT:
+            return [Direction.DOWN]
+        case Direction.UP:
+            return [Direction.LEFT]
+        case Direction.DOWN:
+            return [Direction.RIGHT]
 
 
-def handle_splitter_horizontal(direction: Direction) -> list[Direction]:
+def handle_splitter_horizontal(direction: Direction) -> List[Direction]:
     return (
         [direction]
         if direction in [Direction.LEFT, Direction.RIGHT]
-        else [Direction.UP, Direction.DOWN]
+        else [Direction.LEFT, Direction.RIGHT]
     )
 
 
-def handle_splitter_vertical(direction: Direction) -> list[Direction]:
+def handle_splitter_vertical(direction: Direction) -> List[Direction]:
     return (
         [direction]
         if direction in [Direction.UP, Direction.DOWN]
-        else [Direction.LEFT, Direction.RIGHT]
+        else [Direction.UP, Direction.DOWN]
     )
 
 
@@ -154,10 +170,10 @@ tile_actions = {
 }
 
 
-def part1(input: list[list[str]]) -> int:
+def part1(input: List[List[str]]) -> int:
     grid = util.Grid(input)
-    dfs(grid)
-    return 0
+    energized = dfs(grid)
+    return energized
 
 
 def dfs(
@@ -172,6 +188,16 @@ def dfs(
     energized = set()
     while queue:
         point, direction = queue.pop(0)
+        print(f"Point: {point}, Direction: {direction}")
+
+        # Check if the point is valid
+        if not grid.valid(point):
+            continue
+        try:
+            grid.move_coordinates(point, direction)
+        except IndexError:
+            continue
+
         energized.add((point, direction))
 
         # Get the next point in the direction
@@ -187,18 +213,18 @@ def dfs(
     return len(energized)
 
 
-def part2(input: list[list[str]]) -> int:
+def part2(input: List[List[str]]) -> int:
     pass
     return 0
 
 
 if __name__ == "__main__":
     util.set_debug(False)
-    input: list[list[str]] = util.read_str_grid(MAIN_PATH)
-    sample: list[list[str]] = util.read_str_grid(SAMPLE_PATH)
+    input: List[List[str]] = util.read_str_grid(MAIN_PATH)
+    sample: List[List[str]] = util.read_str_grid(SAMPLE_PATH)
 
     print("PART 1")
-    part1(sample)
+    print(part1(sample))
     # part1(input)
 
     # print("PART 2")

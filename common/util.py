@@ -180,21 +180,22 @@ class Grid:
     @property
     def max_x(self):
         return len(self._grid[0])
-    
+
     @property
     def max_y(self):
         return len(self._grid)
-    
+
     def move_coordinates(self, coord, direction) -> Tuple[int, int]:
         """
         Move a coordinate in the specified direction.
         """
         next_x = coord[0] + direction[0]
         next_y = coord[1] + direction[1]
-        self.__validate_coordinates(coord[0], coord[1])
-        self.__validate_coordinates(next_x, next_y)
+        try:
+            self.__validate_coordinates(next_x, next_y)
+        except IndexError as e:
+            raise IndexError(f"Invalid coordinates: ({next_x}, {next_y}") from e
         return next_x, next_y
-        
 
     def __validate_coordinates(self, x, y):
         orig_x = x
@@ -234,6 +235,16 @@ class Grid:
         for row in self._grid:
             for item in row:
                 yield item
+
+    def valid(self, pos):
+        """
+        Returns True if the specified position is valid, False otherwise.
+        """
+        try:
+            self.__validate_coordinates(pos[0], pos[1])
+            return True
+        except IndexError:
+            return False
 
     def get_adjacent_positions(self, pos):
         """

@@ -5,13 +5,7 @@ import os
 import sys
 import functools
 import itertools
-
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, parent_dir)
-
 import common.util as util
-
-os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 DAY = 00
 MAIN_PATH = f"2023/data/day{DAY:02d}.txt"

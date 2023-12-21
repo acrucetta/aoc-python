@@ -85,12 +85,16 @@ def shortest_path(grid: List[List[int]], target: Tuple[int, int]) -> int | float
     min_distance[0][0] = 0
     # (dist, row, col, last_three_moves)
     priority_queue = [(0, 0, 0, [])]
+    seen = set()
 
     while priority_queue:
-        dist, row, col, last_three_moves = heapq.heappop(priority_queue)
+        heat, row, col, last_three_moves = heapq.heappop(priority_queue)
 
         if (row, col) == target:
             return min_distance[row][col]
+        if (row, col) in seen:
+            continue
+        seen.add((row, col))
 
         for dr, dc in DIRECTIONS:
             rr, cc = row + dr, col + dc
@@ -99,12 +103,12 @@ def shortest_path(grid: List[List[int]], target: Tuple[int, int]) -> int | float
                 and 0 <= cc < max_col
                 and valid_move(last_three_moves, dr, dc)
             ):
-                new_dist = dist + grid[rr][cc]
-                if new_dist < min_distance[rr][cc]:
-                    min_distance[rr][cc] = new_dist
+                new_heat = heat + grid[rr][cc]
+                if new_heat < min_distance[rr][cc]:
+                    min_distance[rr][cc] = new_heat
                     new_last_three_moves = last_three_moves[-2:] + [(dr, dc)]
                     heapq.heappush(
-                        priority_queue, (new_dist, rr, cc, new_last_three_moves)
+                        priority_queue, (new_heat, rr, cc, new_last_three_moves)
                     )
     return min_distance[max_row - 1][max_col - 1]
 

@@ -194,7 +194,7 @@ class Grid:
         try:
             self.__validate_coordinates(next_x, next_y)
         except IndexError as e:
-            raise IndexError(f"Invalid coordinates: ({next_x}, {next_y}") from e
+            raise IndexError(f"Invalid coordinates: ({next_x}, {next_y})") from e
         return next_x, next_y
 
     def __validate_coordinates(self, x, y):

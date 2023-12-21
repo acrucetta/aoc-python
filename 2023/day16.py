@@ -185,41 +185,32 @@ def dfs(
 
     queue = [start]
     energized_grid = util.Grid(
-        [["." for _ in range(grid.max_x+1)] for _ in range(grid.max_y+1)]
+        [["." for _ in range(grid.max_x)] for _ in range(grid.max_y)]
     )
     energized = []
-    counter = 0
+    visited = set()
     while queue:
-        counter += 1
-        if counter > 100:
-            break
         point, direction = queue.pop(0)
-        print(f"Point: {point}, Direction: {direction}")
 
         # Check if the point is valid
-        if not grid.valid(point):
+        if not grid.valid(point) or (point, direction) in visited:
             continue
-        try:
-            grid.move_coordinates(point, direction)
-        except IndexError:
-            continue
-
+        
+        visited.add((point, direction))
         energized.append((point, direction))
         energized_grid[point] = "#"
 
-        # Get the next point in the direction
         next_point = grid.move_coordinates(point, direction)
-
         tile = grid[next_point]
-
+        
         # Get the next directions to go
         next_directions = tile_actions[tile](direction)
         for next_direction in next_directions:
             queue.append((next_point, next_direction))
 
-    print(grid, "\n")
     print(energized_grid)
-    return len(set(energized))
+    energized_grid = [pair[0] for pair in visited]    
+    return len(set(energized_grid))
 
 
 def part2(input: List[List[str]]) -> int:
@@ -233,8 +224,8 @@ if __name__ == "__main__":
     sample: List[List[str]] = util.read_str_grid(SAMPLE_PATH)
 
     print("PART 1")
-    print(part1(sample))
-    # part1(input)
+    # print(part1(sample))
+    print(part1(input))
 
     # print("PART 2")
     # part2(input)

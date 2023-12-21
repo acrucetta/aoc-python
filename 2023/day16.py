@@ -1,3 +1,4 @@
+from collections import deque
 from enum import Enum
 import sys
 import os
@@ -69,153 +70,66 @@ MAIN_PATH = f"2023/data/day{DAY:02d}.txt"
 SAMPLE_PATH = f"2023/data/day{DAY:02d}-sample.txt"
 
 
-class Point:
-    def __init__(self, x: int, y: int):
-        self.x = x
-        self.y = y
-
-    # Make the point subscriptable
-    def __getitem__(self, index: int) -> int:
-        if index == 0:
-            return self.x
-        elif index == 1:
-            return self.y
-        else:
-            raise IndexError("Invalid index")
-
-    def __repr__(self) -> str:
-        return f"({self.x}, {self.y})"
-
-    def __eq__(self, other) -> bool:
-        return self.x == other.x and self.y == other.y
-
-    def __hash__(self) -> int:
-        return hash((self.x, self.y))
-
-
-class Direction(Enum):
-    UP = (0, -1)
-    DOWN = (0, 1)
-    LEFT = (-1, 0)
-    RIGHT = (1, 0)
-
-    def __repr__(self) -> str:
-        return f"<{self.value[0]}, {self.value[1]}>"
-
-    # Make the direction subscriptable
-    def __getitem__(self, index: int) -> int:
-        if index in [0, 1]:
-            return self.value[index]
-        else:
-            raise IndexError("Invalid index")
-
-
-def handle_empty(direction: Direction) -> List[Direction]:
-    # .
-    return [direction]
-
-
-def handle_mirror_slash(direction: Direction) -> List[Direction]:
-    # /
-    match direction:
-        case Direction.LEFT:
-            return [Direction.DOWN]
-        case Direction.RIGHT:
-            return [Direction.UP]
-        case Direction.UP:
-            return [Direction.RIGHT]
-        case Direction.DOWN:
-            return [Direction.LEFT]
-
-
-def handle_mirror_backslash(direction: Direction) -> List[Direction]:
-    # \
-    match direction:
-        case Direction.LEFT:
-            return [Direction.UP]
-        case Direction.RIGHT:
-            return [Direction.DOWN]
-        case Direction.UP:
-            return [Direction.LEFT]
-        case Direction.DOWN:
-            return [Direction.RIGHT]
-
-
-def handle_splitter_horizontal(direction: Direction) -> List[Direction]:
-    # -
-    return (
-        [direction]
-        if direction in [Direction.LEFT, Direction.RIGHT]
-        else [Direction.LEFT, Direction.RIGHT]
-    )
-
-
-def handle_splitter_vertical(direction: Direction) -> List[Direction]:
-    # |
-    return (
-        [direction]
-        if direction in [Direction.UP, Direction.DOWN]
-        else [Direction.UP, Direction.DOWN]
-    )
-
-
-tile_actions = {
-    ".": handle_empty,
-    "/": handle_mirror_slash,
-    "\\": handle_mirror_backslash,
-    "-": handle_splitter_horizontal,
-    "|": handle_splitter_vertical,
-}
-
-
 def part1(input: List[List[str]]) -> int:
-    grid = util.Grid(input)
-    energized = dfs(grid)
+    arr = np.array(input)
+    energized = dfs(arr)
     return energized
 
 
 def dfs(
-    grid: util.Grid,
-    start: Tuple[Tuple[int, int], Direction] = ((0, 0), Direction.RIGHT),
+    grid: np.ndarray,
+    start: Tuple[Tuple[int, int], Tuple[int, int]] = ((0, -1), (0, 1)),
 ) -> int:
     """
     Traverse the grid using DFS.
     """
-    # Start at the top-left (0, 0)
-
-    queue = [start]
-    energized_grid = util.Grid(
-        [["." for _ in range(grid.max_x)] for _ in range(grid.max_y)]
-    )
-    energized = []
+    max_x, max_y = np.shape(grid)
+    queue = deque([start])
     visited = set()
     while queue:
-        point, direction = queue.pop(0)
-
-        # Check if the point is valid
-        if not grid.valid(point) or (point, direction) in visited:
+        (row, col), (di, dj) = queue.pop()
+        next_row = row + di
+        next_col = col + dj
+        if ((next_row, next_col), (di,dj)) in visited:
             continue
-        
-        visited.add((point, direction))
-        energized.append((point, direction))
-        energized_grid[point] = "#"
+        if not (0 <= next_row < max_x and 0 <= next_col < max_y):
+            continue
+        visited.add(((next_row, next_col), (di, dj)))
+        tile = grid[next_row, next_col]
+        match tile:
+            case "/":
+                di, dj = -dj, -di
+            case "\\":
+                di, dj = dj, di
+            case "-":
+                if di:
+                    di, dj = 0, 1
+                    queue.append(((next_row, next_col), (0, -1)))
+            case "|":
+                if dj:
+                    di, dj = 1, 0
+                    queue.append(((next_row, next_col), (-1, 0)))
+            case ".":
+                di, dj = di, dj
+            case _:
+                raise ValueError(f"Invalid tile: {tile}")
+        queue.append(((next_row, next_col), (di, dj)))
 
-        next_point = grid.move_coordinates(point, direction)
-        tile = grid[next_point]
-        
-        # Get the next directions to go
-        next_directions = tile_actions[tile](direction)
-        for next_direction in next_directions:
-            queue.append((next_point, next_direction))
-
-    print(energized_grid)
-    energized_grid = [pair[0] for pair in visited]    
-    return len(set(energized_grid))
+    return len(set([p for p, _ in visited]))
 
 
 def part2(input: List[List[str]]) -> int:
-    pass
-    return 0
+    arr = np.array(input)
+    max_x, max_y = np.shape(arr)
+    energized = 0
+    for x in range(max_x):
+        energized = max(energized, dfs(arr, start=((x, -1), (0, 1))))
+        energized = max(energized, dfs(arr, start=((x, max_y), (0, -1))))
+    for y in range(max_y):
+        energized = max(energized, dfs(arr, start=((-1, y), (1, 0))))
+        energized = max(energized, dfs(arr, start=((max_x, y), (-1, 0))))
+    print(energized)
+    return energized
 
 
 if __name__ == "__main__":
@@ -224,9 +138,9 @@ if __name__ == "__main__":
     sample: List[List[str]] = util.read_str_grid(SAMPLE_PATH)
 
     print("PART 1")
-    # print(part1(sample))
+    print(part1(sample))
     print(part1(input))
 
-    # print("PART 2")
-    # part2(input)
-    # part2(sample)
+    print("PART 2")
+    part2(input)
+    part2(sample)

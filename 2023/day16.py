@@ -6,7 +6,6 @@ import util
 import numpy as np
 
 
-
 """
 Day 16: The Floor Will be Lava
 
@@ -112,10 +111,12 @@ class Direction(Enum):
 
 
 def handle_empty(direction: Direction) -> List[Direction]:
+    # .
     return [direction]
 
 
 def handle_mirror_slash(direction: Direction) -> List[Direction]:
+    # /
     match direction:
         case Direction.LEFT:
             return [Direction.DOWN]
@@ -128,6 +129,7 @@ def handle_mirror_slash(direction: Direction) -> List[Direction]:
 
 
 def handle_mirror_backslash(direction: Direction) -> List[Direction]:
+    # \
     match direction:
         case Direction.LEFT:
             return [Direction.UP]
@@ -140,6 +142,7 @@ def handle_mirror_backslash(direction: Direction) -> List[Direction]:
 
 
 def handle_splitter_horizontal(direction: Direction) -> List[Direction]:
+    # -
     return (
         [direction]
         if direction in [Direction.LEFT, Direction.RIGHT]
@@ -148,6 +151,7 @@ def handle_splitter_horizontal(direction: Direction) -> List[Direction]:
 
 
 def handle_splitter_vertical(direction: Direction) -> List[Direction]:
+    # |
     return (
         [direction]
         if direction in [Direction.UP, Direction.DOWN]
@@ -178,12 +182,17 @@ def dfs(
     Traverse the grid using DFS.
     """
     # Start at the top-left (0, 0)
+
     queue = [start]
-    energized_grid = [
-        [False for _ in range(grid.max_x + 1)] for _ in range(grid.max_y + 1)
-    ]
-    energized = set()
+    energized_grid = util.Grid(
+        [["." for _ in range(grid.max_x+1)] for _ in range(grid.max_y+1)]
+    )
+    energized = []
+    counter = 0
     while queue:
+        counter += 1
+        if counter > 100:
+            break
         point, direction = queue.pop(0)
         print(f"Point: {point}, Direction: {direction}")
 
@@ -195,8 +204,8 @@ def dfs(
         except IndexError:
             continue
 
-        energized.add((point, direction))
-        energized_grid[point[1]][point[0]] = True
+        energized.append((point, direction))
+        energized_grid[point] = "#"
 
         # Get the next point in the direction
         next_point = grid.move_coordinates(point, direction)
@@ -208,8 +217,9 @@ def dfs(
         for next_direction in next_directions:
             queue.append((next_point, next_direction))
 
+    print(grid, "\n")
     print(energized_grid)
-    return len(energized)
+    return len(set(energized))
 
 
 def part2(input: List[List[str]]) -> int:

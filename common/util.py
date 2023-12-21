@@ -210,7 +210,7 @@ class Grid:
         """
         Prints the existing grid class.
         """
-        rows = [", ".join(str(x) for x in row) for row in self._grid]
+        rows = [" ".join(str(x) for x in row) for row in self._grid]
         return "\n".join(rows)
 
     def __getitem__(self, pos):

@@ -50,6 +50,14 @@ def call_and_print(fn, *args):
     print("{}({}) = {}".format(fn.__name__, str_args, fn(*args)))
 
 
+def print_grid(grid):
+    """
+    Print a grid.
+    """
+    rows = ["".join(str(x) for x in row) for row in grid]
+    print("\n".join(rows))
+
+
 #
 # FILE I/O
 #
@@ -147,5 +155,3 @@ class Direction:
 
     def __repr__(self) -> str:
         return f"<{self._p.x}, {self._p.y}>"
-
-

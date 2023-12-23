@@ -48,28 +48,28 @@ SAMPLE_PATH = f"2023/data/day{DAY:02d}-sample.txt"
 DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
 
-def valid_move(last_three_moves, dr, dc):
-    if len(last_three_moves) < 3:
-        return True
-    else:
-        # Check last 3 moves are the same
-        are_three_same = all(
-            [last_three_moves[i] == last_three_moves[i + 1] for i in range(2)]
-        )
-        if are_three_same:
-            (last_dr, last_dc) = last_three_moves[-1]
-            if (last_dr, last_dc) == (dr, dc):
-                return False
-            # Now we need to verify that the next moves are left or right
-            # of the last move e.g., if last move is (0, 1) then next moves can
-            # be (1, 0) or (-1, 0)
-            if last_dr == 0:
-                # Last move was horizontal, next move must be vertical
-                return dr != 0
-            else:
-                # Last move was vertical, next move must be horizontal
-                return dc != 0
-        return True
+def valid_move(move_history, new_move):
+    if len(move_history) >= 3:
+        if move_history[-3:] == [new_move] * 3:
+            # We can't move in the same direction 3 times in a row
+            return False
+        if move_history[-1] == (-new_move[0], -new_move[1]):
+            # We can't move in the opposite direction of the last move
+            return False
+    return True
+
+
+def print_path(grid, path):
+    dir_symbols = {(1, 0): "v", (0, 1): ">", (-1, 0): "^", (0, -1): "<"}
+    for r, c, dr, dc in path:
+        if (dr, dc) in dir_symbols:
+            grid[r][c] = dir_symbols[(dr, dc)]
+    print_grid(grid)
+
+
+def print_grid(grid) -> None:
+    rows = ["\t".join(str(x) for x in row) for row in grid]
+    print("\n".join(rows))
 
 
 def shortest_path(grid: List[List[int]], target: Tuple[int, int]) -> int | float:
@@ -81,36 +81,32 @@ def shortest_path(grid: List[List[int]], target: Tuple[int, int]) -> int | float
     move.
     """
     max_row, max_col = len(grid), len(grid[0])
-    min_distance = [[float("inf")] * max_col for _ in range(max_row)]
-    min_distance[0][0] = 0
-    # (dist, row, col, last_three_moves)
-    priority_queue = [(0, 0, 0, [])]
+    min_heat = [[float("inf")] * max_col for _ in range(max_row)]
+    min_heat[0][0] = 0
+    # (heat, row, col, moves)
+    priority_queue = [(0, 0, 0, 0, 0, [])]
     seen = set()
 
     while priority_queue:
-        heat, row, col, last_three_moves = heapq.heappop(priority_queue)
+        heat, row, col, dr, dc, moves = heapq.heappop(priority_queue)
 
         if (row, col) == target:
-            return min_distance[row][col]
-        if (row, col) in seen:
+            return min_heat[row][col]
+        if ((row, col), (dr, dc)) in seen:
             continue
-        seen.add((row, col))
+        seen.add(((row, col), (dr, dc)))
 
         for dr, dc in DIRECTIONS:
             rr, cc = row + dr, col + dc
-            if (
-                0 <= rr < max_row
-                and 0 <= cc < max_col
-                and valid_move(last_three_moves, dr, dc)
-            ):
+            if 0 <= rr < max_row and 0 <= cc < max_col and valid_move(moves, (dr, dc)):
                 new_heat = heat + grid[rr][cc]
-                if new_heat < min_distance[rr][cc]:
-                    min_distance[rr][cc] = new_heat
-                    new_last_three_moves = last_three_moves[-2:] + [(dr, dc)]
+                if new_heat < min_heat[rr][cc]:
+                    min_heat[rr][cc] = new_heat
+                    new_moves = moves + [(dr, dc)]
                     heapq.heappush(
-                        priority_queue, (new_heat, rr, cc, new_last_three_moves)
+                        priority_queue, (new_heat, rr, cc, dr, dc, new_moves)
                     )
-    return min_distance[max_row - 1][max_col - 1]
+    return min_heat[max_row - 1][max_col - 1]
 
 
 def part1(input: List[List[int]]) -> int | float:

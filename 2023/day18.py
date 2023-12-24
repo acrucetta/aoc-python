@@ -45,7 +45,7 @@ Approach:
 class Instruction:
     direction: str
     distance: int
-    rgb: str
+    hex: str
 
     def coord_from_direction(self):
         match self.direction:
@@ -58,13 +58,6 @@ class Instruction:
             case "D":
                 return (0, 1)
 
-    def color_from_rgb(self):
-        rgb = tuple(int(self.rgb[i : i + 2], 16) for i in (0, 2, 4))
-        r, g, b = rgb
-        hls = cs.rgb_to_hls(r, g, b)
-        hue = hls[0]
-        return hue
-
 
 def parse_instructions(input: List[str]) -> List[Instruction]:
     instructions = []
@@ -72,6 +65,23 @@ def parse_instructions(input: List[str]) -> List[Instruction]:
         direction, distance, rgb = line.split()
         instructions.append(Instruction(direction, int(distance), rgb))
     return instructions
+
+
+def parse_hex_instructions(input: List[str]) -> List[Tuple[int, Tuple[int, int]]]:
+    instructions = []
+    # The last hexadecimal digit encodes the direction to dig:
+    # 0 means R, 1 means D, 2 means L, and 3 means U.
+    dist_map = {"0": (1, 0), "1": (0, 1), "2": (-1, 0), "3": (0, -1)}
+    for line in input:
+        _, _, hex = line.split()
+        # Remove (, ) and # from hex
+        # (#70c710)
+        hex = hex[2:-1]
+        hex_distance = int(hex[:5], 16)
+        direction = dist_map[hex[-1]]
+        instructions.append((hex_distance, direction))
+    return instructions
+
 
 def calculate_area(corners: List[Tuple[int, int]]) -> int:
     # We need to find the area of the polygon
@@ -111,8 +121,26 @@ def part1(input: List[str]) -> int:
     return boundary_points + interior_points
 
 
-def part2(input: str) -> int:
-    return 0
+def part2(input: List[str]) -> int:
+    instructions = parse_hex_instructions(input)
+    curr_coord = (0, 0)
+    boundaries = []
+    corners = []
+    for distance, direction in instructions:
+        x, y = curr_coord
+        dx, dy = direction
+        # We want to mark the coordinates from curr_coord to
+        # the next coordinate
+        for _ in range(distance):
+            x, y = x + dx, y + dy
+            boundaries.append((x, y))
+        corners.append((x, y))
+        curr_coord = (x, y)
+    # Apply pick's theorem to find the number of # in the grid
+    boundary_points = len(boundaries)
+    area = calculate_area(corners)
+    interior_points = (area + 1) - (boundary_points // 2)
+    return boundary_points + interior_points
 
 
 if __name__ == "__main__":
@@ -121,9 +149,9 @@ if __name__ == "__main__":
     sample = util.read_strs(SAMPLE_PATH, sep="\n")
 
     print("PART 1")
-    # print(part1(sample))
-    print(part1(input))
+    # util.call_and_print(part1, input)
+    # util.call_and_print(part1, sample)
 
     print("PART 2")
-    # part2(input)
-    # part2(sample)
+    util.call_and_print(part2, input)
+    util.call_and_print(part2, sample)

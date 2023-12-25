@@ -1,5 +1,6 @@
 import util as util
 from typing import List, Dict, Tuple, Set, Optional, Union
+from collections import OrderedDict
 
 DAY = 19
 MAIN_PATH = f"2023/data/day{DAY:02d}.txt"
@@ -52,6 +53,12 @@ Approach:
 
 
 def parse_rules(input: str) -> Dict[str, List[str]]:
+    """
+    Parses each rule and returns a dictionary of the type:
+    {'path': {
+    OrderedDict( 'part' : {"< or >":value, "then": next path} )
+    }
+    """
     rule_set = input.split("\n")
     all_rules = {}
     for rules in rule_set:
@@ -59,40 +66,82 @@ def parse_rules(input: str) -> Dict[str, List[str]]:
         workflow = workflow.strip()
         rules_str = rules_str.strip("}")
         rules = rules_str.split(",")
-        conditions = {}
+        conditions = OrderedDict()
         for rule in rules:
             if "<" in rule:
                 part, rest = rule.split("<")
                 comp_value, to_workflow = rest.split(":")
-                conditions[part] = {"<": comp_value, "then": to_workflow}
+                conditions[part] = {"<": int(comp_value), "then": to_workflow}
             elif ">" in rule:
                 part, rest = rule.split(">")
                 comp_value, to_workflow = rest.split(":")
-                conditions[part] = {">": comp_value, "then": to_workflow}
+                conditions[part] = {">": int(comp_value), "then": to_workflow}
             else:
                 conditions[rule] = {"finally": rule}
         all_rules[workflow] = conditions
     return all_rules
 
 
-def parse_parts(input: str) -> Dict[str, int]:
+def parse_parts(input: str) -> List[Dict[str, int]]:
     # {x=787,m=2655,a=1222,s=2876
+    all_parts = []
     parts = input.split("\n")
-    parts_dict = {}
     for part in parts:
         part = part.strip("{}")
         part = part.split(",")
+        parts_dict = {}
         for p in part:
             key, value = p.split("=")
             parts_dict[key] = int(value)
-    return parts_dict
+        all_parts.append(parts_dict)
+    return all_parts
+
+
+def process_part(
+    parts: Dict[str, int], workflows: Dict[str, Dict[str, List[str]]]
+) -> str:
+    """
+    We will take each part through the workflows and determine if it ends
+    up being "A" accepted or "R" rejected.
+    """
+    init_workflow = workflows["in"]
+
+    def process_workflow(parts, workflow) -> str:
+        """
+        Takes a part and a workflow and returns the next workflow to process
+        """
+        to_workflow = ""
+        print(f"Processing workflow: {workflow}")
+        for part, conditions in workflow.items():
+            rating = int(parts.get(part, None))
+            if "<" in conditions:
+                if rating < conditions["<"]:
+                    to_workflow = workflows[conditions["then"]]
+                break
+            elif ">" in conditions:
+                if rating > conditions[">"]:
+                    to_workflow = workflows[conditions["then"]]
+            else:
+                to_workflow = workflows[conditions["finally"]]
+                break
+        return to_workflow
+
+    while True:
+        next_workflow = process_workflow(parts, init_workflow)
+        if next_workflow == "A":
+            return "A"
+        elif next_workflow == "R":
+            return "R"
+        else:
+            next_workflow = workflows[next_workflow]
 
 
 def part1(input: List[str]) -> int:
     print(input)
-    print(parse_rules(input[0]).get("px"))
-    print(parse_parts(input[1]))
-    return 0
+    workflows = parse_rules(input[0])
+    parts = parse_parts(input[1])
+    result = process_part(parts[0], workflows)
+    return result
 
 
 def part2(input: str) -> int:

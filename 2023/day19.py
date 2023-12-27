@@ -83,7 +83,13 @@ def parse_rules(input: str) -> Dict[str, List[str]]:
 
 
 def parse_parts(input: str) -> List[Dict[str, int]]:
-    # {x=787,m=2655,a=1222,s=2876
+    """
+    Convers a string list of parts into a list of
+    dictionaries where each item has the part
+    and its rating
+
+    E.g.,{x=787,m=2655,a=1222,s=2876}
+    """
     all_parts = []
     parts = input.split("\n")
     for part in parts:
@@ -104,7 +110,6 @@ def process_part(
     We will take each part through the workflows and determine if it ends
     up being "A" accepted or "R" rejected.
     """
-    init_workflow = workflows["in"]
 
     def process_workflow(parts, workflow) -> str:
         """
@@ -113,35 +118,50 @@ def process_part(
         to_workflow = ""
         print(f"Processing workflow: {workflow}")
         for part, conditions in workflow.items():
-            rating = int(parts.get(part, None))
+            try:
+                rating = int(parts.get(part, None))
+            except:
+                print("The part is not in the rating, going to the finally condition")
             if "<" in conditions:
                 if rating < conditions["<"]:
-                    to_workflow = workflows[conditions["then"]]
-                break
+                    to_workflow = conditions["then"]
+                    break
             elif ">" in conditions:
                 if rating > conditions[">"]:
-                    to_workflow = workflows[conditions["then"]]
+                    to_workflow = conditions["then"]
+                    break
             else:
-                to_workflow = workflows[conditions["finally"]]
+                to_workflow = conditions["finally"]
                 break
         return to_workflow
 
+    init_workflow = workflows["in"]
+    next_workflow: str = ""
+    n = 0
     while True:
-        next_workflow = process_workflow(parts, init_workflow)
-        if next_workflow == "A":
+        if n == 0:
+            curr_workflow = process_workflow(parts, init_workflow)
+        else:
+            curr_workflow = process_workflow(parts, next_workflow)
+        n+=1
+        
+        if curr_workflow == "A":
             return "A"
-        elif next_workflow == "R":
+        elif curr_workflow == "R":
             return "R"
         else:
-            next_workflow = workflows[next_workflow]
+            next_workflow = workflows[curr_workflow]
+            print(f"From {curr_workflow} to {next_workflow}\n")
 
 
 def part1(input: List[str]) -> int:
     print(input)
     workflows = parse_rules(input[0])
     parts = parse_parts(input[1])
-    result = process_part(parts[0], workflows)
-    return result
+    results = []
+    for part in parts:
+        results.append(process_part(part, workflows))
+    return results
 
 
 def part2(input: str) -> int:

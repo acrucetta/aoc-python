@@ -55,9 +55,23 @@ Approach:
 def parse_rules(input: str) -> Dict[str, List[str]]:
     """
     Parses each rule and returns a dictionary of the type:
-    {'path': {
-    OrderedDict( 'part' : {"< or >":value, "then": next path} )
+    {
+        "px": {
+            "a<2006": "qkq",
+            "m>2090": "A",
+            "rfg": "R"
+        },
+        "pv": {
+            "a>1716": "R",
+            "A": "A"
+        }
     }
+
+    Args:
+        input (str): The input string of rules
+
+    Returns:
+        Dict[str, List[str]]: A dictionary of rules
     """
     rule_set = input.split("\n")
     all_rules = {}
@@ -89,6 +103,12 @@ def parse_parts(input: str) -> List[Dict[str, int]]:
     and its rating
 
     E.g.,{x=787,m=2655,a=1222,s=2876}
+
+    Args:
+        input (str): The input string of parts
+
+    Returns:
+        List[Dict[str, int]]: A list of parts
     """
     all_parts = []
     parts = input.split("\n")
@@ -103,6 +123,24 @@ def parse_parts(input: str) -> List[Dict[str, int]]:
     return all_parts
 
 
+def process_workflow(parts, workflow_rules) -> str | None:
+    """
+    Takes a part and a workflow and returns the next workflow to process
+    """
+    for part, condition in workflow_rules.items():
+        if "finally" in condition:
+            return condition["finally"]
+        operator = list(condition.keys())[0] # "<" or ">"
+        threshold = int(condition.get("<") or condition.get(">"))
+        part_value = parts.get(part)
+
+        if (operator == "<" and part_value < threshold) or (
+            operator == ">" and part_value > threshold
+        ):
+            return condition["then"]
+    return None
+
+
 def process_part(
     parts: Dict[str, int], workflows: Dict[str, Dict[str, List[str]]]
 ) -> str:
@@ -110,58 +148,28 @@ def process_part(
     We will take each part through the workflows and determine if it ends
     up being "A" accepted or "R" rejected.
     """
-
-    def process_workflow(parts, workflow) -> str:
-        """
-        Takes a part and a workflow and returns the next workflow to process
-        """
-        to_workflow = ""
-        print(f"Processing workflow: {workflow}")
-        for part, conditions in workflow.items():
-            try:
-                rating = int(parts.get(part, None))
-            except:
-                print("The part is not in the rating, going to the finally condition")
-            if "<" in conditions:
-                if rating < conditions["<"]:
-                    to_workflow = conditions["then"]
-                    break
-            elif ">" in conditions:
-                if rating > conditions[">"]:
-                    to_workflow = conditions["then"]
-                    break
-            else:
-                to_workflow = conditions["finally"]
-                break
-        return to_workflow
-
-    init_workflow = workflows["in"]
-    next_workflow: str = ""
-    n = 0
-    while True:
-        if n == 0:
-            curr_workflow = process_workflow(parts, init_workflow)
-        else:
-            curr_workflow = process_workflow(parts, next_workflow)
-        n+=1
-        
-        if curr_workflow == "A":
-            return "A"
-        elif curr_workflow == "R":
-            return "R"
-        else:
-            next_workflow = workflows[curr_workflow]
-            print(f"From {curr_workflow} to {next_workflow}\n")
+    current_workflow = "in"
+    visited = set()
+    while current_workflow not in ("A", "R"):
+        if current_workflow in visited:
+            raise Exception("Infinite loop")
+        visited.add(current_workflow)
+        workflow_rules = workflows[current_workflow]
+        next_workflow = process_workflow(parts, workflow_rules)
+        if next_workflow is None:
+            raise Exception("No next workflow")
+        current_workflow = next_workflow
+    return current_workflow
 
 
 def part1(input: List[str]) -> int:
     print(input)
     workflows = parse_rules(input[0])
     parts = parse_parts(input[1])
-    results = []
-    for part in parts:
-        results.append(process_part(part, workflows))
-    return results
+    accepted_parts = [
+        part for part in parts if process_part(part, workflows) == "A"]
+    total_rating = sum(sum(part.values()) for part in accepted_parts)
+    return total_rating
 
 
 def part2(input: str) -> int:
@@ -174,4 +182,5 @@ if __name__ == "__main__":
     sample = util.read_strs(SAMPLE_PATH, sep="\n\n")
 
     print("PART 1")
-    util.call_and_print(part1, sample)
+    # util.call_and_print(part1, sample)
+    util.call_and_print(part1, input)

@@ -4,13 +4,11 @@ Utility functions and classes for Advent of Code
 
 import math
 import copy
+import os
 from typing import Tuple
 import numpy as np
 import shapely.geometry
 import shapely.affinity
-
-# References:
-# github.com/borja
 
 #
 # DEBUGGING/LOGGING
@@ -26,15 +24,14 @@ def set_debug(debug):
     global DEBUG
     DEBUG = debug
 
-
 def log(*args):
     """
     Prints a debugging message (if debugging messages are enabled)
     """
     if DEBUG:
-        print("\x1b[7;30;47m", end="")
+        print("\x1b[34;1m", end="")  # Set text color to blue
         print(*args, end="")
-        print("\x1b[0m")
+        print("\x1b[0m")  # Reset text color
 
 
 def call_and_print(fn, *args):
@@ -68,6 +65,7 @@ def read_strs(filename, sep=None):
     Read strings from a file, separated by whitespace or by the
     specified separator.
     """
+    print("Current working dir:", os.getcwd())
     with open(filename) as f:
         txt = f.read().strip()
         strs = txt.split(sep=sep)

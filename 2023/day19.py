@@ -130,7 +130,8 @@ def process_workflow(parts, workflow_rules) -> str | None:
     for part, condition in workflow_rules.items():
         if "finally" in condition:
             return condition["finally"]
-        operator = list(condition.keys())[0] # "<" or ">"
+        # "<" or ">"n.keys())[0] # "<" or ">"
+        operator = list(condition.keys())[0]
         threshold = int(condition.get("<") or condition.get(">"))
         part_value = parts.get(part)
 
@@ -166,9 +167,8 @@ def part1(input: List[str]) -> int:
     print(input)
     workflows = parse_rules(input[0])
     parts = parse_parts(input[1])
-    accepted_parts = [
-        part for part in parts if process_part(part, workflows) == "A"]
-    total_rating = sum(sum(part.values()) for part in accepted_parts)
+    accepted_parts = [part for part in parts if process_part(part, workflows) == "A"] in parts if process_part(part, workflows) == "A"]
+    total_rating= sum(sum(part.values()) for part in accepted_parts)
     return total_rating
 
 
@@ -178,8 +178,8 @@ def part2(input: str) -> int:
 
 if __name__ == "__main__":
     util.set_debug(False)
-    input = util.read_strs(MAIN_PATH, sep="\n\n")
-    sample = util.read_strs(SAMPLE_PATH, sep="\n\n")
+    input= util.read_strs(MAIN_PATH, sep="\n\n")
+    sample= util.read_strs(SAMPLE_PATH, sep="\n\n")
 
     print("PART 1")
     # util.call_and_print(part1, sample)

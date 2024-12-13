@@ -5,8 +5,9 @@ Utility functions and classes for Advent of Code
 import math
 import copy
 import os
-from typing import Tuple
+from typing import List, Tuple
 import numpy as np
+from shapely import Point
 import shapely.geometry
 import shapely.affinity
 
@@ -23,6 +24,7 @@ def set_debug(debug):
     """
     global DEBUG
     DEBUG = debug
+
 
 def log(*args):
     """
@@ -116,8 +118,25 @@ def parse_grid(strs: str) -> list[list[str]]:
 
 
 #
+# GRID
+#
+
+Grid = List[List[int | str]]
+
+
+def in_bounds(point: Tuple[int, int], grid: Grid):
+    row, col = point
+    max_row, max_col = len(grid) - 1, len(grid[0]) - 1
+    if 0 <= row <= max_row and 0 <= col <= max_col:
+        return True
+    return False
+
+
+#
 # DIRECTIONS
 #
+
+CARDINAL_DIRECTIONS = [(0, -1), (0, 1), (-1, 0), (1, 0)]
 
 
 class Direction:

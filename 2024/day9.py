@@ -33,34 +33,32 @@ def build_list(input: List[str]) -> List[List[str | int]]:
         file_id += 1
     return result
 
+
 def part2(input: List[str]) -> int:
     util.log(f"Input: {input}")
     lst = build_list(input)
-    flatten_lst = [x for xs in lst for x in xs]
+    flat_lst = [x for xs in lst for x in xs]
     queue = list(filter(lambda x: "." not in x, lst))[::-1]
-    print(queue)
-    
-    # Iterate over each item in the queue and find a spot for it
-    # Iterate over the file system, find a spot that is large enough for 
-    # that block to move in that is less than its current position
-    # If found, replace that span with the file ID, remove from the queue, replace
-    # the spot left by the file with a '.'
-    
-    # for i in enumerate(flatten_lst):
-    #     if "." in arr:
-    #         # Check if we can place an item in the queue, if 
-    #         # so, replace it
-    #         start_e=arr.index(".")
-    #         end_e=len(arr)
-    #         available_slots = end_e-start_e
-    #         for block in queue:
-    #             block_id=block[0]
-    #             if len(block)<=available_slots:
-    #                 lst[i][start_e:start_e+len(block)] = [block_id] * len(block) 
-    #                 queue.pop(0)
-    #                 available_slots-=len(block)
-    #                 if "." in arr:
-    #                     start_e=arr.index(".")
+
+    for block in queue:
+        needed_slots = len(block)
+        file_id = block[0]
+        for i, block_id in enumerate(flat_lst):
+            if block_id == ".":
+                available_slots = 0
+                for j in range(i, len(flat_lst)):
+                    if flat_lst[j] == ".":
+                        available_slots += 1
+                        continue
+                    else:
+                        break
+                if needed_slots <= available_slots:
+                    flat_lst[i:i+needed_slots] = [file_id] * needed_slots
+                    for k in range(j, len(flat_lst)):
+                        if flat_lst[k] == file_id:
+                            flat_lst[k] = "."
+                    queue.pop(0)
+                    break
     print(lst)
     return 2
 

@@ -39,7 +39,6 @@ EEEE
 
 
 def calculate_perimerter_pt1(coords_set: Set[Tuple[int, int]]) -> int:
-    
     perimeter = 0
     for row, col in coords_set:
         for dx, dy in util.CARDINAL_DIRECTIONS:
@@ -50,7 +49,7 @@ def calculate_perimerter_pt1(coords_set: Set[Tuple[int, int]]) -> int:
 
 
 def calculate_perimeter_pt2(coords_set: Set[Tuple[int, int]]) -> int:
-    return
+    return 0
 
 
 def part1(grid: List[List[int | str]]) -> int:

@@ -75,7 +75,7 @@ def part1(input: List[str]) -> int:
         x_coeff, y_coeff, results = parse_input(button_config)
         coeffs = tuple(map(int, (x_coeff[0], x_coeff[1], y_coeff[0], y_coeff[1])))
         results = tuple(map(int, (results[0], results[1])))
-        pushes = solve_equation(coeffs, results)
+        pushes = solve_equation(coeffs, results)  # type: ignore
         if pushes:
             a_pushes, b_pushes = pushes
             total_pushes += (a_pushes * 3) + (b_pushes * 1)
@@ -83,7 +83,18 @@ def part1(input: List[str]) -> int:
 
 
 def part2(input: str) -> int:
-    pass
+    total_pushes = 0
+    offset = 10000000000000
+    for button_config in input:
+        x_coeff, y_coeff, results = parse_input(button_config)
+        coeffs = tuple(map(int, (x_coeff[0], x_coeff[1], y_coeff[0], y_coeff[1])))
+        results = int(results[0]) + offset, int(results[1]) + offset
+        pushes = solve_equation(coeffs, results)  # type: ignore
+        if pushes:
+            print(f"Succeeded with equation: {coeffs}")
+            a_pushes, b_pushes = pushes
+            total_pushes += (a_pushes * 3) + (b_pushes * 1)
+    return total_pushes
 
 
 def test_solve_equations__with_invalid_coeffs__returns_none():
@@ -125,10 +136,10 @@ if __name__ == "__main__":
     test_solve_equations__with_invalid_coeffs__returns_none()
 
     print("PART 1")
-    util.call_and_print(part1, input)
-    util.call_and_print(part1, sample)
+    # util.call_and_print(part1, input)
+    # util.call_and_print(part1, sample)
 
     print("PART 2")
     # part2(input)
-    # util.call_and_print(part2, input)
-    # util.call_and_print(part2, sample)
+    util.call_and_print(part2, input)
+    util.call_and_print(part2, sample)

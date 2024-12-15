@@ -108,7 +108,7 @@ def read_str_grid(filepath):
     return matrix
 
 
-def parse_grid(strs: str) -> list[list[str]]:
+def parse_grid(strs: str) -> List[List[str]]:
     """
     Parse a string into a grid.
     """
@@ -140,35 +140,27 @@ CARDINAL_DIRECTIONS = [(0, -1), (0, 1), (-1, 0), (1, 0)]
 
 
 class Direction:
-    def __init__(self, x, y):
-        self._p = shapely.geometry.Point(x, y)
+    def __init__(self, row, col):
+        self.row = row
+        self.col = col
+
+    def to_tuple(self):
+        return (self.row, self.col)
 
     @classmethod
     def UP(cls):
-        return cls(0, -1)
-
-    @classmethod
-    def DOWN(cls):
-        return cls(0, 1)
-
-    @classmethod
-    def LEFT(cls):
         return cls(-1, 0)
 
     @classmethod
-    def RIGHT(cls):
+    def DOWN(cls):
         return cls(1, 0)
 
-    def __eq__(self, other):
-        # return self._p.x == other._p.x and self._p.y == other._p.y
-        return self._p == other._p
+    @classmethod
+    def LEFT(cls):
+        return cls(0, -1)
 
-    def __hash__(self):
-        # return hash((self._p.x, self._p.y))
-        return hash(self._p)
+    @classmethod
+    def RIGHT(cls):
+        return cls(0, 1)
 
-    def __copy__(self):
-        return Direction(self._p.x, self._p.y)
-
-    def __repr__(self) -> str:
-        return f"<{self._p.x}, {self._p.y}>"
+    

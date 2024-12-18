@@ -47,7 +47,6 @@ SAMPLE_PATH = f"2023/data/day{DAY:02d}-sample.txt"
 
 DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
-
 def valid_move(move_history, new_move):
     if len(move_history) >= 3:
         if move_history[-3:] == [new_move] * 3:
